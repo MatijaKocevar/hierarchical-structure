@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { generateHierarchicalData } from "./utils/dataGenerator";
 import { TreeView } from "./components/TreeView";
+import { TableView } from "./components/TableView";
 
 export interface Item {
     name: string;
@@ -11,9 +12,11 @@ export interface Item {
 function App() {
     const [data, setData] = useState<Item | null>(null);
     const [activeDataset, setActiveDataset] = useState<"small" | "medium" | "large">("small");
+    const [activeView, setActiveView] = useState<"table" | "tree">("table");
 
     const generateData = (type: "small" | "medium" | "large") => {
         setActiveDataset(type);
+
         switch (type) {
             case "small":
                 setData(generateHierarchicalData(10, 2, 3));
@@ -25,6 +28,40 @@ function App() {
                 setData(generateHierarchicalData(10000, 3, 7));
                 break;
         }
+    };
+
+    const handleValueChange = (path: number[], newValue: number) => {
+        if (!data) return;
+
+        const newData = { ...data };
+        let current = newData;
+
+        for (let i = 0; i < path.length - 1; i++) {
+            if (current.children) {
+                current = current.children[path[i]];
+            }
+        }
+
+        if (current.children) {
+            current.children[path[path.length - 1]].value = newValue;
+
+            const recalculateValues = (node: Item): number => {
+                if (!node.children || node.children.length === 0) {
+                    return node.value;
+                }
+
+                node.value = node.children.reduce(
+                    (sum, child) => sum + recalculateValues(child),
+                    0
+                );
+
+                return node.value;
+            };
+
+            recalculateValues(newData);
+        }
+
+        setData(newData);
     };
 
     useEffect(() => {
@@ -39,7 +76,7 @@ function App() {
                 </h1>
 
                 <div className="flex flex-wrap items-center justify-center gap-2 w-full">
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
                         <button
                             onClick={() => generateData("small")}
                             className={`px-3 py-1.5 text-sm rounded-md ${
@@ -67,12 +104,34 @@ function App() {
                             Large Dataset (10k nodes)
                         </button>
                     </div>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setActiveView("table")}
+                            className={`px-3 py-1.5 text-sm rounded-md ${
+                                activeView === "table" ? "bg-blue-500 text-white" : "bg-gray-100"
+                            }`}
+                        >
+                            Table View
+                        </button>
+                        <button
+                            onClick={() => setActiveView("tree")}
+                            className={`px-3 py-1.5 text-sm rounded-md ${
+                                activeView === "tree" ? "bg-blue-500 text-white" : "bg-gray-100"
+                            }`}
+                        >
+                            Tree View
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <div className="flex-1 p-2 min-h-0 overflow-hidden">
                 <div className="h-full bg-white rounded-lg shadow-lg overflow-hidden">
-                    <TreeView data={data} />
+                    {activeView === "table" ? (
+                        <TableView data={data} onValueChange={handleValueChange} />
+                    ) : (
+                        <TreeView data={data} />
+                    )}
                 </div>
             </div>
         </div>
