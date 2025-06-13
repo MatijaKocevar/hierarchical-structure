@@ -4,7 +4,7 @@ import type { Item } from "../App";
 
 interface TableViewProps {
     data: Item | null;
-    onValueChange?: (path: number[], newValue: number) => void;
+    onValueChange?: (path: number[], newValue: number, operation?: "skip" | "invert") => void;
 }
 
 export function TableView({ data, onValueChange }: TableViewProps) {
@@ -112,24 +112,48 @@ export function TableView({ data, onValueChange }: TableViewProps) {
                     const hasChildren = d.item.children && d.item.children.length > 0;
 
                     if (hasChildren) {
-                        cell.append("span").text(d.item.value);
+                        cell.append("span")
+                            .text(d.item.value)
+                            .attr("class", d.item.value < 0 ? "text-red-500" : "");
                     } else {
-                        const input = cell
+                        const container = cell
+                            .append("div")
+                            .attr("class", "flex items-center justify-end gap-2");
+
+                        container
+                            .append("button")
+                            .attr(
+                                "class",
+                                "px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded"
+                            )
+                            .text(d.item.isSkipped ? "Unskip" : "Skip")
+                            .on("click", () => onValueChange?.(d.path, d.item.value, "skip"));
+
+                        container
+                            .append("button")
+                            .attr(
+                                "class",
+                                "px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded"
+                            )
+                            .text(d.item.isInverted ? "Uninvert" : "Invert")
+                            .on("click", () => onValueChange?.(d.path, d.item.value, "invert"));
+
+                        container
                             .append("input")
                             .attr("type", "number")
                             .attr("value", d.item.value)
                             .attr(
                                 "class",
-                                "w-24 px-2 py-1 text-right border rounded focus:outline-none focus:border-blue-500"
-                            );
-
-                        input.on("change", function () {
-                            const newValue = Number(this.value);
-
-                            if (!isNaN(newValue) && onValueChange) {
-                                onValueChange(d.path, newValue);
-                            }
-                        });
+                                `w-24 px-2 py-1 text-right border rounded 
+                                ${d.item.isSkipped ? "bg-gray-100" : ""} 
+                                ${d.item.isInverted ? "text-red-500" : ""}`
+                            )
+                            .on("change", function () {
+                                const newValue = Number(this.value);
+                                if (!isNaN(newValue) && onValueChange) {
+                                    onValueChange(d.path, newValue);
+                                }
+                            });
                     }
                 });
 

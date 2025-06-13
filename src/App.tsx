@@ -7,6 +7,8 @@ export interface Item {
     name: string;
     value: number;
     children?: Item[];
+    isSkipped?: boolean;
+    isInverted?: boolean;
 }
 
 function App() {
@@ -30,7 +32,7 @@ function App() {
         }
     };
 
-    const handleValueChange = (path: number[], newValue: number) => {
+    const handleValueChange = (path: number[], newValue: number, operation?: "skip" | "invert") => {
         if (!data) return;
 
         const newData = { ...data };
@@ -43,18 +45,30 @@ function App() {
         }
 
         if (current.children) {
-            current.children[path[path.length - 1]].value = newValue;
+            const targetNode = current.children[path[path.length - 1]];
+
+            if (operation === "skip") {
+                targetNode.isSkipped = !targetNode.isSkipped;
+                targetNode.isInverted = false;
+            } else if (operation === "invert") {
+                targetNode.isInverted = !targetNode.isInverted;
+                targetNode.isSkipped = false;
+            } else {
+                targetNode.value = newValue;
+                targetNode.isSkipped = false;
+                targetNode.isInverted = false;
+            }
 
             const recalculateValues = (node: Item): number => {
                 if (!node.children || node.children.length === 0) {
-                    return node.value;
+                    if (node.isSkipped) return 0;
+                    return node.isInverted ? -node.value : node.value;
                 }
-
-                node.value = node.children.reduce(
+                const childrenSum = node.children.reduce(
                     (sum, child) => sum + recalculateValues(child),
                     0
                 );
-
+                node.value = node.isSkipped ? 0 : childrenSum;
                 return node.value;
             };
 
