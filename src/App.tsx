@@ -61,15 +61,16 @@ function App() {
 
             const recalculateValues = (node: Item): number => {
                 if (!node.children || node.children.length === 0) {
-                    if (node.isSkipped) return 0;
-                    return node.isInverted ? -node.value : node.value;
+                    return node.isSkipped ? 0 : node.isInverted ? -node.value : node.value;
                 }
+                
                 const childrenSum = node.children.reduce(
                     (sum, child) => sum + recalculateValues(child),
                     0
                 );
-                node.value = node.isSkipped ? 0 : childrenSum;
-                return node.value;
+
+                node.value = childrenSum;
+                return node.isSkipped ? 0 : node.isInverted ? -node.value : node.value;
             };
 
             recalculateValues(newData);

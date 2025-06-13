@@ -48,14 +48,38 @@ export function TableView({ data, onValueChange }: TableViewProps) {
         const tbody = table.append("tbody").attr("class", "divide-y divide-gray-200");
 
         function updateTable() {
-            const flatData: Array<{ item: Item; depth: number; path: number[] }> = [];
+            const flatData: Array<{
+                item: Item;
+                depth: number;
+                path: number[];
+                hasSkippedParent: boolean;
+                hasInvertedParent: boolean;
+            }> = [];
 
-            function flattenData(item: Item, depth = 0, path: number[] = []) {
-                flatData.push({ item, depth, path });
+            function flattenData(
+                item: Item,
+                depth = 0,
+                path: number[] = [],
+                hasSkippedParent = false,
+                hasInvertedParent = false
+            ) {
+                flatData.push({
+                    item,
+                    depth,
+                    path,
+                    hasSkippedParent: hasSkippedParent || Boolean(item.isSkipped),
+                    hasInvertedParent: hasInvertedParent || Boolean(item.isInverted)
+                });
 
                 if (item.children && expandedRows.current.has(path.join("-"))) {
                     item.children.forEach((child, index) => {
-                        flattenData(child, depth + 1, [...path, index]);
+                        flattenData(
+                            child,
+                            depth + 1,
+                            [...path, index],
+                            hasSkippedParent || Boolean(item.isSkipped),
+                            hasInvertedParent || Boolean(item.isInverted)
+                        );
                     });
                 }
             }
@@ -64,7 +88,13 @@ export function TableView({ data, onValueChange }: TableViewProps) {
                 flattenData(data);
             }
 
-            type FlatDataType = { item: Item; depth: number; path: number[] };
+            type FlatDataType = {
+                item: Item;
+                depth: number;
+                path: number[];
+                hasSkippedParent: boolean;
+                hasInvertedParent: boolean;
+            };
 
             const rows = tbody
                 .selectAll<HTMLTableRowElement, FlatDataType>("tr")
@@ -77,8 +107,11 @@ export function TableView({ data, onValueChange }: TableViewProps) {
             rows.append("td")
                 .attr("class", "px-6 py-3 text-left")
                 .append("div")
-                .attr("class", "flex items-center")
-                .style("padding-left", (d) => `${d.depth * 20}px`)
+                .attr("class", (d) => {
+                    const data = d as FlatDataType;
+                    return `flex items-center ${data.hasSkippedParent ? "text-gray-400" : ""} ${data.hasInvertedParent ? "text-red-500" : ""}`;
+                })
+                .style("padding-left", (d) => `${(d as FlatDataType).depth * 20}px`)
                 .each(function (d: FlatDataType) {
                     const cell = d3.select(this);
                     const hasChildren = d.item.children && d.item.children.length > 0;
@@ -112,9 +145,32 @@ export function TableView({ data, onValueChange }: TableViewProps) {
                     const hasChildren = d.item.children && d.item.children.length > 0;
 
                     if (hasChildren) {
-                        cell.append("span")
+                        const container = cell
+                            .append("div")
+                            .attr("class", "flex items-center justify-end gap-2");
+
+                        container
+                            .append("button")
+                            .attr(
+                                "class",
+                                "px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded"
+                            )
+                            .text(d.item.isSkipped ? "Unskip" : "Skip")
+                            .on("click", () => onValueChange?.(d.path, d.item.value, "skip"));
+
+                        container
+                            .append("button")
+                            .attr(
+                                "class",
+                                "px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded"
+                            )
+                            .text(d.item.isInverted ? "Uninvert" : "Invert")
+                            .on("click", () => onValueChange?.(d.path, d.item.value, "invert"));
+
+                        container
+                            .append("span")
                             .text(d.item.value)
-                            .attr("class", d.item.value < 0 ? "text-red-500" : "");
+                            .attr("class", (d.hasInvertedParent || d.item.value < 0) ? "text-red-500" : d.hasSkippedParent ? "text-gray-400" : "");
                     } else {
                         const container = cell
                             .append("div")
@@ -145,8 +201,8 @@ export function TableView({ data, onValueChange }: TableViewProps) {
                             .attr(
                                 "class",
                                 `w-24 px-2 py-1 text-right border rounded 
-                                ${d.item.isSkipped ? "bg-gray-100" : ""} 
-                                ${d.item.isInverted ? "text-red-500" : ""}`
+                                ${d.item.isSkipped || d.hasSkippedParent ? "bg-gray-100 text-gray-400" : ""} 
+                                ${d.item.isInverted || d.hasInvertedParent ? "text-red-500" : ""}`
                             )
                             .on("change", function () {
                                 const newValue = Number(this.value);
@@ -158,8 +214,11 @@ export function TableView({ data, onValueChange }: TableViewProps) {
                 });
 
             rows.append("td")
-                .attr("class", "px-6 py-3 text-center")
-                .text((d) => d.depth);
+                .attr("class", (d) => {
+                    const data = d as FlatDataType;
+                    return `px-6 py-3 text-center ${data.hasSkippedParent ? "text-gray-400" : ""} ${data.hasInvertedParent ? "text-red-500" : ""}`;
+                })
+                .text((d) => (d as FlatDataType).depth);
         }
 
         expandedRows.current.add("");
