@@ -9,7 +9,15 @@ const generateRandomName = () => {
     }`;
 };
 
-const generateRandomValue = () => Math.floor(Math.random() * 1000) + 100;
+const generateRandomValue = () => 100;
+
+const calculateTotals = (item: Item): number => {
+    if (!item.children || item.children.length === 0) {
+        return item.value;
+    }
+    item.value = item.children.reduce((sum, child) => sum + calculateTotals(child), 0);
+    return item.value;
+};
 
 export const generateHierarchicalData = (
     targetLeafCount: number,
@@ -48,5 +56,7 @@ export const generateHierarchicalData = (
         return item;
     };
 
-    return generateLevel(targetLeafCount);
+    const root = generateLevel(targetLeafCount);
+    calculateTotals(root);
+    return root;
 };
