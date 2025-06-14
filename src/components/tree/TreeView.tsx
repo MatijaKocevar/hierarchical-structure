@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import * as d3 from "d3";
-import type { Item } from "../App";
+import type { Item } from "../../types";
 
 interface TreeViewProps {
     data: Item | null;
@@ -36,7 +36,6 @@ export function TreeView({ data }: TreeViewProps) {
         const width = svgRef.current.clientWidth;
         const containerHeight = svgRef.current.clientHeight;
         const radius = Math.min(width, containerHeight) / 2;
-
         const g = svg.append("g").attr("class", "zoom-layer");
 
         performance.mark("layoutStart");
@@ -46,9 +45,7 @@ export function TreeView({ data }: TreeViewProps) {
             .tree<Item>()
             .size([2 * Math.PI, radius])
             .separation((a, b) => (a.parent === b.parent ? 1 : 2));
-
         const treeData = treeLayout(root);
-
         const nodes = treeData.descendants();
         const levelCache = new Map<number, number>();
 
