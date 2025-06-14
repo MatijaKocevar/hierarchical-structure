@@ -6,7 +6,7 @@ import { createNameCell } from "./NameCell";
 import { createValueCell } from "./ValueCell";
 import { createDepthCell } from "./DepthCell";
 import { createActionsCell } from "./ActionsCell";
-import { flattenData } from "../../utils/flattenData";
+import { flattenData } from "../../utils";
 
 interface TableViewProps {
     data: Item | null;

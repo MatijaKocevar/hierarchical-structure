@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { generateHierarchicalData } from "./utils/dataGenerator";
-import { recalculateValues } from "./utils/valueCalculator";
+import { generateHierarchicalData } from "./utils";
+import { recalculateValues, countLeafNodes } from "./utils";
 import { Header } from "./components/header/Header";
 import { MainContent } from "./components/MainContent";
 import type { Item } from "./types";
@@ -9,10 +9,15 @@ function App() {
     const [data, setData] = useState<Item | null>(null);
     const [depth, setDepth] = useState(2);
     const [activeView, setActiveView] = useState<"table" | "tree">("table");
+    const [leafNodesCount, setLeafNodesCount] = useState(0);
 
     const generateData = useCallback((newDepth: number) => {
         setDepth(newDepth);
-        setData(generateHierarchicalData(newDepth));
+
+        const newData = generateHierarchicalData(newDepth);
+
+        setData(newData);
+        setLeafNodesCount(countLeafNodes(newData));
     }, []);
 
     const handleValueChange = (path: number[], newValue: number, operation?: "skip" | "invert") => {
@@ -59,6 +64,7 @@ function App() {
                 activeView={activeView}
                 onDepthChange={generateData}
                 onViewChange={setActiveView}
+                leafNodesCount={leafNodesCount}
             />
             <MainContent activeView={activeView} data={data} onValueChange={handleValueChange} />
         </div>

@@ -1,9 +1,10 @@
 interface DatasetControlsProps {
     depth: number;
     onDepthChange: (depth: number) => void;
+    leafNodesCount: number;
 }
 
-export function DatasetControls({ depth, onDepthChange }: DatasetControlsProps) {
+export function DatasetControls({ depth, onDepthChange, leafNodesCount }: DatasetControlsProps) {
     const handleInputChange = (value: string) => {
         const numValue = parseInt(value);
 
@@ -24,6 +25,9 @@ export function DatasetControls({ depth, onDepthChange }: DatasetControlsProps) 
                     onChange={(e) => handleInputChange(e.target.value)}
                     className="px-2 py-1 text-sm rounded border w-24"
                 />
+            </div>
+            <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Leaf Nodes: {leafNodesCount}</span>
             </div>
         </div>
     );

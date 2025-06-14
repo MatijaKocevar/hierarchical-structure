@@ -1,5 +1,5 @@
 import type { Item } from "../types";
-import { recalculateValues } from "./valueCalculator";
+import { recalculateValues } from ".";
 
 export const generateHierarchicalData = (maxDepth: number): Item => {
     const generateLevel = (currentDepth: number = 0, parentPath: string = ""): Item => {
