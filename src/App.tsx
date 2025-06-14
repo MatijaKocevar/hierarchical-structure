@@ -1,36 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { generateHierarchicalData } from "./utils/dataGenerator";
-import { TreeView } from "./components/TreeView";
-import { TableView } from "./components/TableView";
-
-export interface Item {
-    name: string;
-    value: number;
-    children?: Item[];
-    isSkipped?: boolean;
-    isInverted?: boolean;
-}
+import { recalculateValues } from "./utils/valueCalculator";
+import { Header } from "./components/header/Header";
+import { MainContent } from "./components/MainContent";
+import type { Item } from "./types";
 
 function App() {
     const [data, setData] = useState<Item | null>(null);
-    const [activeDataset, setActiveDataset] = useState<"small" | "medium" | "large">("small");
+    const [depth, setDepth] = useState(2);
     const [activeView, setActiveView] = useState<"table" | "tree">("table");
 
-    const generateData = (type: "small" | "medium" | "large") => {
-        setActiveDataset(type);
-
-        switch (type) {
-            case "small":
-                setData(generateHierarchicalData(10, 2, 3));
-                break;
-            case "medium":
-                setData(generateHierarchicalData(1000, 2, 5));
-                break;
-            case "large":
-                setData(generateHierarchicalData(10000, 3, 7));
-                break;
-        }
-    };
+    const generateData = useCallback((newDepth: number) => {
+        setDepth(newDepth);
+        setData(generateHierarchicalData(newDepth));
+    }, []);
 
     const handleValueChange = (path: number[], newValue: number, operation?: "skip" | "invert") => {
         if (!data) return;
@@ -59,20 +42,6 @@ function App() {
                 targetNode.isInverted = false;
             }
 
-            const recalculateValues = (node: Item): number => {
-                if (!node.children || node.children.length === 0) {
-                    return node.isSkipped ? 0 : node.isInverted ? -node.value : node.value;
-                }
-                
-                const childrenSum = node.children.reduce(
-                    (sum, child) => sum + recalculateValues(child),
-                    0
-                );
-
-                node.value = childrenSum;
-                return node.isSkipped ? 0 : node.isInverted ? -node.value : node.value;
-            };
-
             recalculateValues(newData);
         }
 
@@ -80,75 +49,18 @@ function App() {
     };
 
     useEffect(() => {
-        generateData("small");
-    }, []);
+        generateData(depth);
+    }, [generateData, depth]);
 
     return (
         <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
-            <div className="flex-none p-2 bg-white shadow-sm">
-                <h1 className="text-2xl font-bold text-center mb-2">
-                    Hierarchical Structure Visualization
-                </h1>
-
-                <div className="flex flex-wrap items-center justify-center gap-2 w-full">
-                    <div className="flex flex-wrap items-center gap-2 mb-2">
-                        <button
-                            onClick={() => generateData("small")}
-                            className={`px-3 py-1.5 text-sm rounded-md ${
-                                activeDataset === "small" ? "bg-blue-500 text-white" : "bg-gray-100"
-                            }`}
-                        >
-                            Small Dataset
-                        </button>
-                        <button
-                            onClick={() => generateData("medium")}
-                            className={`px-3 py-1.5 text-sm rounded-md ${
-                                activeDataset === "medium"
-                                    ? "bg-blue-500 text-white"
-                                    : "bg-gray-100"
-                            }`}
-                        >
-                            Medium Dataset (1k nodes)
-                        </button>
-                        <button
-                            onClick={() => generateData("large")}
-                            className={`px-3 py-1.5 text-sm rounded-md ${
-                                activeDataset === "large" ? "bg-blue-500 text-white" : "bg-gray-100"
-                            }`}
-                        >
-                            Large Dataset (10k nodes)
-                        </button>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => setActiveView("table")}
-                            className={`px-3 py-1.5 text-sm rounded-md ${
-                                activeView === "table" ? "bg-blue-500 text-white" : "bg-gray-100"
-                            }`}
-                        >
-                            Table View
-                        </button>
-                        <button
-                            onClick={() => setActiveView("tree")}
-                            className={`px-3 py-1.5 text-sm rounded-md ${
-                                activeView === "tree" ? "bg-blue-500 text-white" : "bg-gray-100"
-                            }`}
-                        >
-                            Tree View
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div className="flex-1 p-2 min-h-0 overflow-hidden">
-                <div className="h-full bg-white rounded-lg shadow-lg overflow-hidden">
-                    {activeView === "table" ? (
-                        <TableView data={data} onValueChange={handleValueChange} />
-                    ) : (
-                        <TreeView data={data} />
-                    )}
-                </div>
-            </div>
+            <Header
+                depth={depth}
+                activeView={activeView}
+                onDepthChange={generateData}
+                onViewChange={setActiveView}
+            />
+            <MainContent activeView={activeView} data={data} onValueChange={handleValueChange} />
         </div>
     );
 }
