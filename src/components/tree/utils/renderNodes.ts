@@ -1,25 +1,55 @@
 import * as d3 from "d3";
 import type { HierarchyPointNode } from "d3";
 import type { Item } from "../../../types";
-import { radialPoint } from "../../../utils";
+
+type NodeWithSaved = HierarchyPointNode<Item> & {
+    savedChildren?: HierarchyPointNode<Item>[];
+};
 
 export function renderNodes(
     g: d3.Selection<SVGGElement, unknown, null, undefined>,
-    nodes: Array<HierarchyPointNode<Item>>
+    nodes: Array<HierarchyPointNode<Item>>,
+    onToggle: (node: HierarchyPointNode<Item>) => void
 ) {
     const nodeGroup = g
         .append("g")
-        .attr("class", "nodes")
         .selectAll("g")
         .data(nodes)
         .join("g")
-        .attr("class", "node")
-        .attr("transform", (d) => `translate(${radialPoint(d.x, d.y)})`);
+        .attr("cursor", (d) => {
+            const node = d as NodeWithSaved;
+            return node.children || node.savedChildren ? "pointer" : "default";
+        })
+        .on("click", (_event, d) => {
+            const node = d as NodeWithSaved;
+            if (node.children || node.savedChildren) onToggle(d);
+        });
 
     nodeGroup
         .append("circle")
-        .attr("r", 2)
-        .attr("fill", "#fff")
-        .attr("stroke", "#4299e1")
-        .attr("stroke-width", 1);
+        .attr("cx", (d) => d.y)
+        .attr("cy", (d) => d.x)
+        .attr("fill", (d) => {
+            const node = d as NodeWithSaved;
+            return node.savedChildren ? "#555" : node.children ? "#999" : "#fff";
+        })
+        .attr("stroke", "#555")
+        .attr("r", 2.5);
+
+    nodeGroup
+        .append("text")
+        .attr("x", (d) => d.y)
+        .attr("y", (d) => d.x)
+        .attr("dy", "0.32em")
+        .attr("dx", (d) => {
+            const node = d as NodeWithSaved;
+            return node.children || node.savedChildren ? -6 : 6;
+        })
+        .attr("text-anchor", (d) => {
+            const node = d as NodeWithSaved;
+            return node.children || node.savedChildren ? "end" : "start";
+        })
+        .attr("font-size", "10px")
+        .attr("font-family", "sans-serif")
+        .text((d) => d.data.value);
 }
