@@ -10,6 +10,7 @@ interface TreeVisualizationProps {
     svgRef: RefObject<SVGSVGElement | null>;
     expandedNodes: Set<string>;
     onContextMenu: (event: MouseEvent, node: HierarchyPointNode<Item>) => void;
+    onZoom?: () => void;
 }
 
 export function TreeVisualization({
@@ -17,6 +18,7 @@ export function TreeVisualization({
     svgRef,
     expandedNodes,
     onContextMenu,
+    onZoom,
 }: TreeVisualizationProps) {
     useEffect(() => {
         if (!svgRef.current) return;
@@ -30,12 +32,33 @@ export function TreeVisualization({
 
         function handleToggleNode(node: HierarchyPointNode<Item>) {
             if (toggleNode(node, root, expandedNodes)) {
-                updateVisualization(svg, root, width, height, handleToggleNode, onContextMenu);
+                updateVisualization(
+                    svg,
+                    root,
+                    width,
+                    height,
+                    handleToggleNode,
+                    onContextMenu,
+                    onZoom
+                );
             }
         }
 
-        updateVisualization(svg, root, width, height, handleToggleNode, onContextMenu);
-    }, [data, svgRef, expandedNodes, onContextMenu]);
+        svg.on("click", () => {
+            if (onZoom) onZoom();
+        });
+
+        svg.on("wheel", () => {
+            if (onZoom) onZoom();
+        });
+
+        updateVisualization(svg, root, width, height, handleToggleNode, onContextMenu, onZoom);
+
+        return () => {
+            svg.on("click", null);
+            svg.on("wheel", null);
+        };
+    }, [data, svgRef, expandedNodes, onContextMenu, onZoom]);
 
     return null;
 }
