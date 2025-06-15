@@ -18,12 +18,17 @@ export function setupZoom(
 
     svg.call(zoom).on("dblclick.zoom", null);
 
-    const gbbox = (g.node() as SVGGElement).getBBox();
-    const scale = Math.min(0.9, height / gbbox.height);
-    const centerX = width * 0.2;
-    const centerY = height / 2;
-    const translateX = centerX - gbbox.x * scale;
-    const translateY = centerY - (gbbox.y + gbbox.height / 2) * scale;
+    requestAnimationFrame(() => {
+        const gbbox = (g.node() as SVGGElement).getBBox();
+        const scale = Math.min(0.9, height / gbbox.height);
+        const centerX = width * 0.2;
+        const centerY = height / 2;
 
-    zoom.transform(svg, d3.zoomIdentity.translate(translateX, translateY).scale(scale));
+        if (gbbox.width > 0 && gbbox.height > 0 && width > 0 && height > 0) {
+            const translateX = centerX - gbbox.x * scale;
+            const translateY = centerY - (gbbox.y + gbbox.height / 2) * scale;
+
+            zoom.transform(svg, d3.zoomIdentity.translate(translateX, translateY).scale(scale));
+        }
+    });
 }
