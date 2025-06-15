@@ -8,7 +8,7 @@ import type { Item, Operation } from "./types";
 function App() {
     const [data, setData] = useState<Item | null>(null);
     const [depth, setDepth] = useState(2);
-    const [activeView, setActiveView] = useState<"table" | "tree">("tree");
+    const [activeView, setActiveView] = useState<"table" | "tree">("table");
     const [leafNodesCount, setLeafNodesCount] = useState(0);
 
     const generateData = useCallback((newDepth: number) => {

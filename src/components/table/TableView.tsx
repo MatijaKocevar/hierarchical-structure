@@ -39,10 +39,10 @@ export function TableView({ data, onValueChange }: TableViewProps) {
                 .join("tr")
                 .attr("class", (d) => {
                     if (d.hasSkippedParent || d.item.isSkipped) {
-                        return "bg-gray-50 border-b border-gray-200";
+                        return "bg-red-50 border-b border-gray-200";
                     }
                     if (d.hasInvertedParent || d.item.isInverted) {
-                        return "bg-red-50 border-b border-gray-200";
+                        return "bg-blue-50 border-b border-gray-200";
                     }
                     return "border-b border-gray-200";
                 });
