@@ -1,11 +1,11 @@
 import { TableView } from "./table/TableView";
 import { TreeView } from "./tree/TreeView";
-import type { Item } from "../types";
+import type { Item, Operation } from "../types";
 
 interface MainContentProps {
     activeView: "table" | "tree";
     data: Item | null;
-    onValueChange: (path: number[], newValue: number, operation?: "skip" | "invert") => void;
+    onValueChange: (path: number[], newValue: number, operation?: Operation) => void;
 }
 
 export function MainContent({ activeView, data, onValueChange }: MainContentProps) {

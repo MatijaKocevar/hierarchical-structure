@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import * as d3 from "d3";
-import type { FlatDataType, Item } from "../../types";
+import type { FlatDataType, Item, Operation } from "../../types";
 import { createTableHeader } from "./TableHeader";
 import { createNameCell } from "./NameCell";
 import { createValueCell } from "./ValueCell";
@@ -10,7 +10,7 @@ import { flattenData } from "../../utils";
 
 interface TableViewProps {
     data: Item | null;
-    onValueChange?: (path: number[], newValue: number, operation?: "skip" | "invert") => void;
+    onValueChange?: (path: number[], newValue: number, operation?: Operation) => void;
 }
 
 export function TableView({ data, onValueChange }: TableViewProps) {

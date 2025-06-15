@@ -6,6 +6,8 @@ export interface Item {
     isInverted?: boolean;
 }
 
+export type Operation = "skip" | "unskip" | "invert" | "uninvert";
+
 export type FlatDataType = {
     item: Item;
     depth: number;

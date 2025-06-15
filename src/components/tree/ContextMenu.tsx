@@ -1,11 +1,11 @@
 import type { HierarchyPointNode } from "d3";
-import type { Item } from "../../types";
+import type { Item, Operation } from "../../types";
 
 interface ContextMenuProps {
     x: number;
     y: number;
     node: HierarchyPointNode<Item>;
-    onAction: (action: "skip" | "unskip" | "invert" | "uninvert") => void;
+    onAction: (action: Operation) => void;
 }
 
 export function ContextMenu({ x, y, node, onAction }: ContextMenuProps) {
@@ -19,8 +19,8 @@ export function ContextMenu({ x, y, node, onAction }: ContextMenuProps) {
         return node.parent ? isInverted(node.parent) : false;
     }
 
-    const skipAction = isSkipped(node) ? "unskip" : "skip";
-    const invertAction = isInverted(node) ? "uninvert" : "invert";
+    const skipAction: Operation = isSkipped(node) ? "unskip" : "skip";
+    const invertAction: Operation = isInverted(node) ? "uninvert" : "invert";
 
     return (
         <div

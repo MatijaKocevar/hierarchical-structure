@@ -1,13 +1,13 @@
 import * as d3 from "d3";
-import type { FlatDataType } from "../../types";
+import type { FlatDataType, Operation } from "../../types";
 
 export function createActionsCell(
     rows: d3.Selection<HTMLTableRowElement, FlatDataType, HTMLTableSectionElement, unknown>,
-    onValueChange?: (path: number[], newValue: number, operation?: "skip" | "invert") => void
+    onValueChange?: (path: number[], newValue: number, operation?: Operation) => void
 ) {
     const cells = rows
         .append("td")
-        .attr("class", "w-[120px] px-6 py-2 whitespace-nowrap text-sm text-gray-500 text-right");
+        .attr("class", "w-[140px] px-6 py-2 whitespace-nowrap text-sm text-gray-500 text-right");
 
     cells.each(function (d: FlatDataType) {
         const cell = d3.select(this);
@@ -21,15 +21,15 @@ export function createActionsCell(
                 .append("button")
                 .attr(
                     "class",
-                    `px-2 py-1 text-xs rounded ${
+                    `w-[60px] px-2 py-1 text-xs rounded ${
                         d.item.isSkipped ? "bg-red-500 text-white" : "bg-gray-100 hover:bg-gray-200"
                     }`
                 )
-                .text("Skip")
+                .text(d.item.isSkipped ? "Unskip" : "Skip")
                 .on("click", (event) => {
                     if (onValueChange) {
                         event.preventDefault();
-                        onValueChange(d.path, d.item.value, "skip");
+                        onValueChange(d.path, d.item.value, d.item.isSkipped ? "unskip" : "skip");
                     }
                 });
 
@@ -37,17 +37,21 @@ export function createActionsCell(
                 .append("button")
                 .attr(
                     "class",
-                    `px-2 py-1 text-xs rounded ${
+                    `w-[60px] px-2 py-1 text-xs rounded ${
                         d.item.isInverted
-                            ? "bg-yellow-500 text-white"
+                            ? "bg-blue-500 text-white"
                             : "bg-gray-100 hover:bg-gray-200"
                     }`
                 )
-                .text("Invert")
+                .text(d.item.isInverted ? "Uninvert" : "Invert")
                 .on("click", (event) => {
                     if (onValueChange) {
                         event.preventDefault();
-                        onValueChange(d.path, d.item.value, "invert");
+                        onValueChange(
+                            d.path,
+                            d.item.value,
+                            d.item.isInverted ? "uninvert" : "invert"
+                        );
                     }
                 });
         }

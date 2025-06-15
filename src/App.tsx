@@ -3,7 +3,7 @@ import { generateHierarchicalData } from "./utils";
 import { recalculateValues, countLeafNodes } from "./utils";
 import { Header } from "./components/header/Header";
 import { MainContent } from "./components/MainContent";
-import type { Item } from "./types";
+import type { Item, Operation } from "./types";
 
 function App() {
     const [data, setData] = useState<Item | null>(null);
@@ -13,14 +13,12 @@ function App() {
 
     const generateData = useCallback((newDepth: number) => {
         setDepth(newDepth);
-
         const newData = generateHierarchicalData(newDepth);
-
         setData(newData);
         setLeafNodesCount(countLeafNodes(newData));
     }, []);
 
-    const handleValueChange = (path: number[], newValue: number, operation?: "skip" | "invert") => {
+    const handleValueChange = (path: number[], newValue: number, operation?: Operation) => {
         if (!data) return;
 
         const newData = { ...data };
@@ -35,16 +33,25 @@ function App() {
         if (current.children) {
             const targetNode = current.children[path[path.length - 1]];
 
-            if (operation === "skip") {
-                targetNode.isSkipped = !targetNode.isSkipped;
-                targetNode.isInverted = false;
-            } else if (operation === "invert") {
-                targetNode.isInverted = !targetNode.isInverted;
-                targetNode.isSkipped = false;
-            } else {
-                targetNode.value = newValue;
-                targetNode.isSkipped = false;
-                targetNode.isInverted = false;
+            switch (operation) {
+                case "skip":
+                    targetNode.isSkipped = true;
+                    targetNode.isInverted = false;
+                    break;
+                case "unskip":
+                    targetNode.isSkipped = false;
+                    break;
+                case "invert":
+                    targetNode.isInverted = true;
+                    targetNode.isSkipped = false;
+                    break;
+                case "uninvert":
+                    targetNode.isInverted = false;
+                    break;
+                default:
+                    targetNode.value = newValue;
+                    targetNode.isSkipped = false;
+                    targetNode.isInverted = false;
             }
 
             recalculateValues(newData);
