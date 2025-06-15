@@ -9,7 +9,8 @@ type NodeWithSaved = HierarchyPointNode<Item> & {
 export function renderNodes(
     g: d3.Selection<SVGGElement, unknown, null, undefined>,
     nodes: Array<HierarchyPointNode<Item>>,
-    onToggle: (node: HierarchyPointNode<Item>) => void
+    onToggle: (node: HierarchyPointNode<Item>) => void,
+    onContextMenu: (event: MouseEvent, node: HierarchyPointNode<Item>) => void
 ) {
     const nodeGroup = g
         .append("g")
@@ -23,6 +24,9 @@ export function renderNodes(
         .on("click", (_event, d) => {
             const node = d as NodeWithSaved;
             if (node.children || node.savedChildren) onToggle(d);
+        })
+        .on("contextmenu", (event, d) => {
+            onContextMenu(event, d);
         });
 
     nodeGroup
@@ -31,6 +35,9 @@ export function renderNodes(
         .attr("cy", (d) => d.x)
         .attr("fill", (d) => {
             const node = d as NodeWithSaved;
+            const item = node.data;
+            if (item.isSkipped) return "#EF4444";
+            if (item.isInverted) return "#3B82F6";
             return node.savedChildren ? "#555" : node.children ? "#999" : "#fff";
         })
         .attr("stroke", "#555")
@@ -43,13 +50,18 @@ export function renderNodes(
         .attr("dy", "0.32em")
         .attr("dx", (d) => {
             const node = d as NodeWithSaved;
+
             return node.children || node.savedChildren ? -6 : 6;
         })
         .attr("text-anchor", (d) => {
             const node = d as NodeWithSaved;
+
             return node.children || node.savedChildren ? "end" : "start";
         })
         .attr("font-size", "10px")
         .attr("font-family", "sans-serif")
+        .attr("stroke", "#fff")
+        .attr("stroke-width", "3")
+        .attr("paint-order", "stroke")
         .text((d) => d.data.value);
 }

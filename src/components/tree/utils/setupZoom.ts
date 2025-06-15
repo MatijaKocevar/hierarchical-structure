@@ -9,6 +9,7 @@ export function setupZoom(
     let frame: number | undefined;
     const zoom = d3.zoom<SVGSVGElement, unknown>().on("zoom", (event) => {
         if (frame) cancelAnimationFrame(frame);
+
         frame = requestAnimationFrame(() => {
             g.attr("transform", event.transform);
         });

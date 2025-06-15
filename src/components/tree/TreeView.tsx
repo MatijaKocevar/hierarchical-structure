@@ -1,73 +1,77 @@
-import { useEffect, useRef } from "react";
-import * as d3 from "d3";
+import { useRef, useState } from "react";
 import type { HierarchyPointNode } from "d3";
 import type { Item } from "../../types";
-import { createTreeLayout } from "./utils/createTreeLayout";
-import { renderLinks } from "./utils/renderLinks";
-import { renderNodes } from "./utils/renderNodes";
-import { setupZoom } from "./utils/setupZoom";
+import { ContextMenu } from "./ContextMenu";
+import { TreeVisualization } from "./TreeVisualization";
 
 interface TreeViewProps {
     data: Item | null;
+    onValueChange: (path: number[], value: number, operation?: "skip" | "invert") => void;
 }
 
-type NodeWithSaved<T> = d3.HierarchyNode<T> & {
-    savedChildren?: d3.HierarchyNode<T>[];
-};
+interface ContextMenuPosition {
+    x: number;
+    y: number;
+    node: HierarchyPointNode<Item>;
+}
 
-export function TreeView({ data }: TreeViewProps) {
+export function TreeView({ data, onValueChange }: TreeViewProps) {
     const svgRef = useRef<SVGSVGElement>(null);
+    const [contextMenu, setContextMenu] = useState<ContextMenuPosition | null>(null);
+    const expandedNodesRef = useRef<Set<string>>(new Set());
 
-    useEffect(() => {
-        if (!data || !svgRef.current) return;
+    function handleContextMenu(event: MouseEvent, node: HierarchyPointNode<Item>) {
+        event.preventDefault();
 
-        const svg = d3.select(svgRef.current);
+        const svgRect = svgRef.current?.getBoundingClientRect();
 
-        svg.selectAll("g").remove();
-
-        const width = svgRef.current.clientWidth;
-        const height = svgRef.current.clientHeight;
-
-        const root = d3.hierarchy(data);
-
-        root.descendants().forEach((d) => {
-            if (d.depth > 2) {
-                const node = d as NodeWithSaved<Item>;
-                node.savedChildren = node.children;
-                node.children = undefined;
-            }
-        });
-
-        function updateVisualization() {
-            svg.selectAll("g").remove();
-
-            const g = svg.append("g").attr("class", "zoom-layer");
-            const { nodes, links } = createTreeLayout(root, width);
-
-            renderLinks(g, links);
-            renderNodes(g, nodes as HierarchyPointNode<Item>[], toggleNode);
-            setupZoom(svg, g, width, height);
+        if (svgRect) {
+            setContextMenu({
+                x: event.clientX - svgRect.left,
+                y: event.clientY - svgRect.top,
+                node,
+            });
         }
+    }
 
-        function toggleNode(node: HierarchyPointNode<Item>) {
-            const hierarchyNode = root
-                .descendants()
-                .find((d) => d.data === node.data) as NodeWithSaved<Item>;
-            if (hierarchyNode) {
-                if (hierarchyNode.children) {
-                    hierarchyNode.savedChildren = hierarchyNode.children;
-                    hierarchyNode.children = undefined;
-                } else if (hierarchyNode.savedChildren) {
-                    hierarchyNode.children = hierarchyNode.savedChildren;
-                    hierarchyNode.savedChildren = undefined;
-                }
+    function handleAction(action: "skip" | "invert") {
+        if (contextMenu) {
+            const node = contextMenu.node;
+            const path = [] as number[];
+            let current: HierarchyPointNode<Item> | null = node;
 
-                updateVisualization();
+            while (current.parent) {
+                const parentChildren = current.parent.children || [];
+
+                path.unshift(parentChildren.indexOf(current));
+
+                current = current.parent;
             }
+
+            onValueChange(path, node.data.value, action);
+            setContextMenu(null);
         }
+    }
 
-        updateVisualization();
-    }, [data]);
-
-    return <svg ref={svgRef} className="w-full h-full" style={{ minHeight: "600px" }} />;
+    return (
+        <div className="relative w-full h-full">
+            <svg ref={svgRef} className="w-full h-full" style={{ minHeight: "600px" }} />
+            {data && (
+                <TreeVisualization
+                    data={data}
+                    svgRef={svgRef}
+                    expandedNodes={expandedNodesRef.current}
+                    onContextMenu={handleContextMenu}
+                />
+            )}
+            {contextMenu && (
+                <ContextMenu
+                    x={contextMenu.x}
+                    y={contextMenu.y}
+                    node={contextMenu.node}
+                    onAction={handleAction}
+                />
+            )}
+        </div>
+    );
 }

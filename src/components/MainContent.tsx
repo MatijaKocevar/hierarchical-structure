@@ -15,7 +15,7 @@ export function MainContent({ activeView, data, onValueChange }: MainContentProp
                 {activeView === "table" ? (
                     <TableView data={data} onValueChange={onValueChange} />
                 ) : (
-                    <TreeView data={data} />
+                    <TreeView data={data} onValueChange={onValueChange} />
                 )}
             </div>
         </div>
