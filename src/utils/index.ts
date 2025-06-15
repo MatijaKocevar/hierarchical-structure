@@ -1,6 +1,7 @@
 import type { Item } from "../types";
 export * from "./dataGenerator";
 export * from "./flattenData";
+export * from "./radialPoint";
 
 export const countLeafNodes = (node: Item | null): number => {
     if (!node) return 0;
