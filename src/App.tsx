@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { generateHierarchicalData } from "./utils";
-import { recalculateValues, countLeafNodes } from "./utils";
+import { generateHierarchicalData, updateNodeValue, countLeafNodes } from "./utils";
 import { Header } from "./components/header/Header";
 import { MainContent } from "./components/MainContent";
 import type { Item, Operation } from "./types";
@@ -13,7 +12,9 @@ function App() {
 
     const generateData = useCallback((newDepth: number) => {
         setDepth(newDepth);
+
         const newData = generateHierarchicalData(newDepth);
+
         setData(newData);
         setLeafNodesCount(countLeafNodes(newData));
     }, []);
@@ -21,41 +22,7 @@ function App() {
     const handleValueChange = (path: number[], newValue: number, operation?: Operation) => {
         if (!data) return;
 
-        const newData = { ...data };
-        let current = newData;
-
-        for (let i = 0; i < path.length - 1; i++) {
-            if (current.children) {
-                current = current.children[path[i]];
-            }
-        }
-
-        if (current.children) {
-            const targetNode = current.children[path[path.length - 1]];
-
-            switch (operation) {
-                case "skip":
-                    targetNode.isSkipped = true;
-                    targetNode.isInverted = false;
-                    break;
-                case "unskip":
-                    targetNode.isSkipped = false;
-                    break;
-                case "invert":
-                    targetNode.isInverted = true;
-                    targetNode.isSkipped = false;
-                    break;
-                case "uninvert":
-                    targetNode.isInverted = false;
-                    break;
-                default:
-                    targetNode.value = newValue;
-                    targetNode.isSkipped = false;
-                    targetNode.isInverted = false;
-            }
-
-            recalculateValues(newData);
-        }
+        const newData = updateNodeValue(data, path, newValue, operation);
 
         setData(newData);
     };
