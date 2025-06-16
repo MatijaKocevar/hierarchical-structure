@@ -1,5 +1,6 @@
 import type { HierarchyPointNode } from "d3";
 import type { Item, Operation } from "../../types";
+import { isSkipped, isInverted } from "./utils/hierarchyHelpers";
 
 interface ContextMenuProps {
     x: number;
@@ -9,16 +10,6 @@ interface ContextMenuProps {
 }
 
 export function ContextMenu({ x, y, node, onAction }: ContextMenuProps) {
-    function isSkipped(node: HierarchyPointNode<Item>): boolean {
-        if (node.data.isSkipped) return true;
-        return node.parent ? isSkipped(node.parent) : false;
-    }
-
-    function isInverted(node: HierarchyPointNode<Item>): boolean {
-        if (node.data.isInverted) return true;
-        return node.parent ? isInverted(node.parent) : false;
-    }
-
     const skipAction: Operation = isSkipped(node) ? "unskip" : "skip";
     const invertAction: Operation = isInverted(node) ? "uninvert" : "invert";
 

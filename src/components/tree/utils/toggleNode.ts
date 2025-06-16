@@ -18,10 +18,12 @@ export function toggleNode(
         if (hierarchyNode.children) {
             hierarchyNode.savedChildren = hierarchyNode.children;
             hierarchyNode.children = undefined;
+
             expandedNodes.delete(node.data.name);
         } else if (hierarchyNode.savedChildren) {
             hierarchyNode.children = hierarchyNode.savedChildren;
             hierarchyNode.savedChildren = undefined;
+
             expandedNodes.add(node.data.name);
         }
 

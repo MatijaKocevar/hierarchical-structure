@@ -29,6 +29,7 @@ export function createActionsCell(
                 .on("click", (event) => {
                     if (onValueChange) {
                         event.preventDefault();
+
                         onValueChange(d.path, d.item.value, d.item.isSkipped ? "unskip" : "skip");
                     }
                 });
@@ -47,6 +48,7 @@ export function createActionsCell(
                 .on("click", (event) => {
                     if (onValueChange) {
                         event.preventDefault();
+
                         onValueChange(
                             d.path,
                             d.item.value,

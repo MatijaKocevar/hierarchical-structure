@@ -41,9 +41,11 @@ export function TableView({ data, onValueChange }: TableViewProps) {
                     if (d.hasSkippedParent || d.item.isSkipped) {
                         return "bg-red-50 border-b border-gray-200";
                     }
+
                     if (d.hasInvertedParent || d.item.isInverted) {
                         return "bg-blue-50 border-b border-gray-200";
                     }
+
                     return "border-b border-gray-200";
                 });
 
@@ -55,8 +57,10 @@ export function TableView({ data, onValueChange }: TableViewProps) {
                 } else {
                     expandedRows.current.add(pathKey);
                 }
+
                 updateTable();
             });
+
             createValueCell(rows, onValueChange);
             createDepthCell(rows);
             createActionsCell(rows, onValueChange);

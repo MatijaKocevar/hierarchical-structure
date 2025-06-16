@@ -12,6 +12,7 @@ export function createValueCell(
         .each(function (d: FlatDataType) {
             const cell = d3.select(this);
             const hasChildren = d.item.children && d.item.children.length > 0;
+
             if (hasChildren) {
                 cell.append("span").text(d.item.value);
             } else {
@@ -21,6 +22,7 @@ export function createValueCell(
                     .attr("class", "w-24 px-2 py-1 text-right border rounded")
                     .on("change", function () {
                         const newValue = Number(this.value);
+
                         if (!isNaN(newValue) && onValueChange) {
                             onValueChange(d.path, newValue);
                         }

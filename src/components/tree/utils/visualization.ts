@@ -14,6 +14,7 @@ export function initializeNodes(root: HierarchyNode<Item>, expandedNodes: Set<st
     root.descendants().forEach((d) => {
         if (d.depth > 2 && !expandedNodes.has(d.data.name)) {
             const node = d as NodeWithSaved<Item>;
+
             node.savedChildren = node.children;
             node.children = undefined;
         }
@@ -44,6 +45,7 @@ export function updateVisualization(
         setupZoom(svg, g, width, height, onZoom);
     } else {
         g = existingG;
+
         g.selectAll("*").remove();
     }
 

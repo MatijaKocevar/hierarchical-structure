@@ -14,7 +14,6 @@ export function createNameCell(
             .append("div")
             .attr("class", "flex items-center")
             .style("padding-left", `${d.depth * 20}px`);
-
         const hasChildren = d.item.children && d.item.children.length > 0;
 
         if (hasChildren) {
@@ -24,6 +23,7 @@ export function createNameCell(
                 .text(expandedRows.has(d.path.join("-")) ? "▼" : "▶")
                 .on("click", (event) => {
                     event.preventDefault();
+
                     onExpand(d.path.join("-"));
                 });
         } else {

@@ -1,20 +1,11 @@
 import * as d3 from "d3";
 import type { HierarchyPointNode } from "d3";
 import type { Item } from "../../../types";
+import { isSkipped, isInverted } from "./hierarchyHelpers";
 
 type NodeWithSaved = HierarchyPointNode<Item> & {
     savedChildren?: HierarchyPointNode<Item>[];
 };
-
-function isSkipped(node: HierarchyPointNode<Item>): boolean {
-    if (node.data.isSkipped) return true;
-    return node.parent ? isSkipped(node.parent) : false;
-}
-
-function isInverted(node: HierarchyPointNode<Item>): boolean {
-    if (node.data.isInverted) return true;
-    return node.parent ? isInverted(node.parent) : false;
-}
 
 export function renderNodes(
     g: d3.Selection<SVGGElement, unknown, null, undefined>,
@@ -30,14 +21,17 @@ export function renderNodes(
         .attr("cy", (d) => d.x)
         .attr("fill", (d) => {
             const node = d as NodeWithSaved;
+
             if (isSkipped(node)) return "#EF4444";
             if (isInverted(node)) return "#3B82F6";
+
             return node.savedChildren ? "#555" : node.children ? "#999" : "#fff";
         })
         .attr("stroke", "#555")
         .attr("r", 2.5)
         .on("click", (_event, d) => {
             const node = d as NodeWithSaved;
+
             if (node.children || node.savedChildren) onToggle(d);
         })
         .on("contextmenu", (event, d) => {
@@ -51,10 +45,12 @@ export function renderNodes(
         .attr("dy", "0.32em")
         .attr("dx", (d) => {
             const node = d as NodeWithSaved;
+
             return node.children || node.savedChildren ? -6 : 6;
         })
         .attr("text-anchor", (d) => {
             const node = d as NodeWithSaved;
+
             return node.children || node.savedChildren ? "end" : "start";
         })
         .attr("font-size", "10px")
@@ -65,6 +61,7 @@ export function renderNodes(
         .text((d) => d.data.value)
         .on("click", (_event, d) => {
             const node = d as NodeWithSaved;
+
             if (node.children || node.savedChildren) onToggle(d);
         })
         .on("contextmenu", (event, d) => {
