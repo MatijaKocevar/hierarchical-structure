@@ -1,7 +1,6 @@
 import type { Item, Operation } from "../types";
 export * from "./dataGenerator";
 export * from "./flattenData";
-export * from "./updateNodeValue";
 
 export const countLeafNodes = (node: Item | null): number => {
     if (!node) return 0;
