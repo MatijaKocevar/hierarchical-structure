@@ -2,7 +2,7 @@ import type { Item } from "../types";
 import { recalculateValues } from ".";
 
 export const generateHierarchicalData = (maxDepth: number): Item => {
-    const generateLevel = (currentDepth: number = 0, parentPath: string = ""): Item => {
+    const generateLevel = (parentPath: string = "", currentDepth: number = 0): Item => {
         const item: Item = {
             name: currentDepth === 0 ? "Root" : `Item ${parentPath}`,
             value: 100,
@@ -14,8 +14,8 @@ export const generateHierarchicalData = (maxDepth: number): Item => {
                 .fill(null)
                 .map((_, index) =>
                     generateLevel(
-                        currentDepth + 1,
-                        parentPath ? `${parentPath}.${index + 1}` : `${index + 1}`
+                        parentPath ? `${parentPath}.${index + 1}` : `${index + 1}`,
+                        currentDepth + 1
                     )
                 );
         }
@@ -23,7 +23,7 @@ export const generateHierarchicalData = (maxDepth: number): Item => {
         return item;
     };
 
-    const root = generateLevel(0);
+    const root = generateLevel();
 
     recalculateValues(root);
 
