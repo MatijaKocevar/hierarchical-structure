@@ -10,6 +10,7 @@ export const generateHierarchicalData = (maxDepth: number): Item => {
 
         if (currentDepth < maxDepth) {
             const childCount = Math.floor(Math.random() * 3) + 2;
+
             item.children = Array(childCount)
                 .fill(null)
                 .map((_, index) =>

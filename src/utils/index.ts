@@ -16,15 +16,21 @@ const getEffectiveValue = (node: Item): number => {
     return node.value;
 };
 
-const updateParentValues = (node: Item): void => {
+const calculateNodeValue = (node: Item): void => {
     if (node.children && node.children.length > 0) {
-        node.children.forEach(child => updateParentValues(child));
-        
         const childrenSum = node.children.reduce((sum, child) => {
             return sum + getEffectiveValue(child);
         }, 0);
-        
+
         node.value = childrenSum;
+    }
+};
+
+const updateParentValues = (node: Item): void => {
+    if (node.children && node.children.length > 0) {
+        node.children.forEach((child) => updateParentValues(child));
+
+        calculateNodeValue(node);
     }
 };
 
@@ -46,6 +52,7 @@ export const recalculateValuesPartial = (data: Item, changedPath: number[]): voi
     for (let i = 0; i < changedPath.length - 1; i++) {
         if (current.children) {
             current = current.children[changedPath[i]];
+
             pathToRoot.push(current);
         }
     }
@@ -53,17 +60,7 @@ export const recalculateValuesPartial = (data: Item, changedPath: number[]): voi
     for (let i = pathToRoot.length - 1; i >= 0; i--) {
         const node = pathToRoot[i];
 
-        if (node.children && node.children.length > 0) {
-            const childrenSum = node.children.reduce((sum, child) => {
-                if (!child.children || child.children.length === 0) {
-                    return sum + getEffectiveValue(child);
-                } else {
-                    return sum + getEffectiveValue(child);
-                }
-            }, 0);
-
-            node.value = childrenSum;
-        }
+        calculateNodeValue(node);
     }
 };
 
