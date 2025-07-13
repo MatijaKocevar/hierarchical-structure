@@ -10,16 +10,58 @@ export const countLeafNodes = (node: Item | null): number => {
     return node.children.reduce((sum, child) => sum + countLeafNodes(child), 0);
 };
 
+const getEffectiveValue = (node: Item): number => {
+    if (node.isSkipped) return 0;
+    if (node.isInverted) return -node.value;
+    return node.value;
+};
+
+const calculateNodeValue = (node: Item): void => {
+    if (node.children && node.children.length > 0) {
+        const childrenSum = node.children.reduce((sum, child) => {
+            return sum + getEffectiveValue(child);
+        }, 0);
+
+        node.value = childrenSum;
+    }
+};
+
+const updateParentValues = (node: Item): void => {
+    if (node.children && node.children.length > 0) {
+        node.children.forEach((child) => updateParentValues(child));
+
+        calculateNodeValue(node);
+    }
+};
+
 export const recalculateValues = (node: Item): number => {
-    if (!node.children || node.children.length === 0) {
-        return node.isSkipped ? 0 : node.isInverted ? -node.value : node.value;
+    updateParentValues(node);
+
+    return getEffectiveValue(node);
+};
+
+export const recalculateValuesPartial = (data: Item, changedPath: number[]): void => {
+    if (changedPath.length === 0) {
+        recalculateValues(data);
+        return;
     }
 
-    const childrenSum = node.children.reduce((sum, child) => sum + recalculateValues(child), 0);
+    let current = data;
+    const pathToRoot: Item[] = [data];
 
-    node.value = childrenSum;
+    for (let i = 0; i < changedPath.length - 1; i++) {
+        if (current.children) {
+            current = current.children[changedPath[i]];
 
-    return node.isSkipped ? 0 : node.isInverted ? -node.value : node.value;
+            pathToRoot.push(current);
+        }
+    }
+
+    for (let i = pathToRoot.length - 1; i >= 0; i--) {
+        const node = pathToRoot[i];
+
+        calculateNodeValue(node);
+    }
 };
 
 export function updateNodeValue(
@@ -61,7 +103,7 @@ export function updateNodeValue(
                 targetNode.isInverted = false;
         }
 
-        recalculateValues(newData);
+        recalculateValuesPartial(newData, path);
     }
 
     return newData;

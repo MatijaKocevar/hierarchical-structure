@@ -20,7 +20,7 @@ export function DatasetControls({ depth, onDepthChange, leafNodesCount }: Datase
                 <input
                     type="number"
                     min="0"
-                    max="10"
+                    // max="10"
                     value={depth}
                     onChange={(e) => handleInputChange(e.target.value)}
                     className="px-2 py-1 text-sm rounded border w-24"
